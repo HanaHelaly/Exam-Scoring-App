@@ -5,15 +5,16 @@ import re
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFacePipeline, HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.load import dumps, loads
 from groq import Groq
 import streamlit as st
-from phi.document.reader.pdf import PDFReader
-import io
 from PyPDF2 import PdfReader
 from langchain.docstore.document import Document
 from datasets import Dataset
+import io
+import chardet
+
 
 # Set environment variables
 os.environ["HUGGINGFACE_API_TOKEN"] = "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"
@@ -23,45 +24,9 @@ os.environ['LANGCHAIN_ENDPOINT'] = 'https://api.smith.langchain.com'
 os.environ['LANGCHAIN_API_KEY'] = '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'
 os.environ['LANGCHAIN_PROJECT'] = 'new-rag-examination'
 
-def extract_questions_and_answers(text_list):
-    # Initialize lists to store questions and answers
-    questions = []
-    answers = []
-
-    # Join the list into a single string
-    text = " ".join(text_list)
-
-    # Regular expression pattern to match the start of a question
-    question_pattern = re.compile(r'(\d+\.\s+.*?\?)', re.DOTALL)
-
-    # Find all matches for questions
-    matches = list(re.finditer(question_pattern, text))
-    print(matches)
-
-    # Process each match
-    for i, match in enumerate(matches):
-        # Extract the question text
-        question = match.group(1).strip()
-
-        # Determine the answer text range
-        if i < len(matches) - 1:
-            answer = text[match.end():matches[i + 1].start()].strip()
-        else:
-            answer = text[match.end():].strip()
-
-        # Clean up answer
-        answer = re.sub(r'Q\d+ Grade: \d+\.\s+', '', answer).strip()
-
-        # Append question and answer to respective lists
-        questions.append(question)
-        answers.append(answer)
-
-    return {"question": questions, "answer": answers}
-
-
 # Function to set up the vector store based on uploaded PDFs
 def setup_vectorstore(uploaded_files):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=900, chunk_overlap=100)
     text_chunks = text_splitter.split_documents(uploaded_files[0]['model_answer'])
     embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
     vectorstore = FAISS.from_documents(documents=text_chunks, embedding=embeddings)
@@ -77,13 +42,14 @@ def extract_queries(text, question, num_queries=3):
 
 
 def retrieve_documents(question, retriever):
-    retrieval_template = """You are an AI language model assistant. Your task is to generate two
-      different versions of the given user question starting with '#' to retrieve relevant documents from a vector
-      database. By generating multiple perspectives on the user question, your goal is to help
-      the user overcome some of the limitations of the distance-based similarity search.
-      Provide these alternative questions separated by newlines.
-      Original question: {question}
-      Output (2 queries):"""
+    retrieval_template = """
+    You are an AI language model assistant. Your task is to generate two different versions of the given user question to retrieve relevant documents from a vector
+    database. By generating multiple perspectives on the user question, your goal is to help
+    the user overcome some of the limitations of the distance-based similarity search.
+    Provide these alternative questions separated by newlines.
+    Original question: {question}
+    Output (2 queries starting with '#'):
+    """
 
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
@@ -96,7 +62,7 @@ def retrieve_documents(question, retriever):
                 }
             ],
             model="llama3-70b-8192",
-            temperature=0.0
+            temperature=0.001
 
         )
         return chat_completion.choices[0].message.content
@@ -140,6 +106,7 @@ def extract_final_score(text):
 def process_answer(reference_docs, question, answer, retriever):
     template = """
     **Instruction:**
+    
     You are a student scoring exam system that uses a reference document to evaluate student answers.
     Your only information is the provided reference documents ONLY.
     Extract the correct answer from the documents and evaluate based on the student's answer.
@@ -163,7 +130,6 @@ def process_answer(reference_docs, question, answer, retriever):
 
     **Output:**
     * Final Score (out of 10 points): output the score in the end between double %%: %%value%%
-
     """
 
     client = Groq(
@@ -220,12 +186,18 @@ def main():
 
         student_answer_csv = st.file_uploader("Upload Student Answer CSV", type="csv")
         if student_answer_csv:
-            df = pd.read_csv(student_answer_csv, encoding='unicode_escape')
-            df.columns = df.columns.str.strip()
+            file_content = student_answer_csv.read()
+
+            # Detect the encoding of the file
+            result = chardet.detect(file_content)
+            encoding = result['encoding']
+            file_content = io.StringIO(file_content.decode(encoding))
+            df = pd.read_csv(file_content)
+            df.columns = df.columns.str.strip().str.lower()
             questions = [col.strip() for col in df.columns if '?' in col.strip()[-1]]
             structured_data = []
             for index, row in df.iterrows():
-                name = row['Full Name in English']
+                name = row['full name in english']
                 for question in questions:
                     answer = row[question]
                     structured_data.append({
@@ -270,7 +242,7 @@ def main():
                                         if 'rate limit' in str(e).lower():
                                             print(e)
                                             time.sleep(30)
-                                    question_score = result['score']
+                                    question_score = min(result['score'], 10)
                                     results.append({
                                         'student_name': student['name'],
                                         'question_score': question_score
