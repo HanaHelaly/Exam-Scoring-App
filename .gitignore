@@ -3,8 +3,5 @@ result*
 Sample_Data*
 .env
 __pycache__/
-*.log
-logs/
-*.tmp
-.DS_Store
-*.conf
+
+

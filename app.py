@@ -14,11 +14,19 @@ from langchain.docstore.document import Document
 from datasets import Dataset
 import io
 import chardet
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
+
+# Access the API key
+langchain_api_key = os.getenv('LANGCHAIN_API_KEY')
+groq_api_key = os.getenv('GROQ_API_KEY')
 
 # Set environment variables
-os.environ["HUGGINGFACE_API_TOKEN"] = "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"
-os.environ['GROQ_API_KEY'] = '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'
+os.environ["HUGGINGFACE_API_TOKEN"] = "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"
+os.environ['GROQ_API_KEY'] = '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'
 os.environ['LANGCHAIN_TRACING_V2'] = 'true'
 
 # Function to set up the vector store based on uploaded PDFs
