@@ -1,4 +1,6 @@
 venv/
+result*
+Sample_Data*
 .env
 __pycache__/
 *.log

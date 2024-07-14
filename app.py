@@ -26,14 +26,14 @@ os.environ['LANGCHAIN_PROJECT'] = 'new-rag-examination'
 
 # Function to set up the vector store based on uploaded PDFs
 def setup_vectorstore(uploaded_files):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=900, chunk_overlap=100)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
     text_chunks = text_splitter.split_documents(uploaded_files[0]['model_answer'])
-    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
+    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L12-v2')
     vectorstore = FAISS.from_documents(documents=text_chunks, embedding=embeddings)
     return vectorstore.as_retriever()
 
 
-def extract_queries(text, question, num_queries=3):
+def extract_queries(text, question, num_queries=2):
     pattern = r'\#\s*(.*?\?)'
     text = text.strip()
     matches = re.finditer(pattern, text, re.DOTALL)
@@ -116,7 +116,7 @@ def process_answer(reference_docs, question, answer, retriever):
     * Accuracy (out of 5 points): How well the student's answers the question correctly and matches the key points in the reference document.
     * Relevance (out of 3 points): How well the student's answer stays relevant to the question asked.
     * Completeness (out of 2 points): How well the student's answer covers all essential aspects of the question.
-    * Final Score (out of 10 points): Add the accuracy, relevance and completeness output scores. If the student's answer is not available, blank " " or doesn't match the question, assign 0 point for Final Score.
+    * Final Score (out of 10 points): Add the accuracy, relevance and completeness output scores. If the student's answer is not available, blank " " or doesn't match the question at all, assign 0 point for Final Score.
     * If you don’t know the answer to a question, please place the score with '$' symobl.
 
     **Reference Document:**
@@ -217,6 +217,7 @@ def main():
                 button_placeholder = st.empty()
                 if not st.session_state.button_clicked:
                     if button_placeholder.button("Grade Answers"):
+                        st.text("")
                         with st.spinner("Fetching Reference Documents..."):
                             st.session_state.button_clicked = True
                             button_placeholder.empty()
