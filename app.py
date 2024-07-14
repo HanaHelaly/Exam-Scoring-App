@@ -20,9 +20,6 @@ import chardet
 os.environ["HUGGINGFACE_API_TOKEN"] = "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"
 os.environ['GROQ_API_KEY'] = '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'
 os.environ['LANGCHAIN_TRACING_V2'] = 'true'
-os.environ['LANGCHAIN_ENDPOINT'] = 'https://api.smith.langchain.com'
-os.environ['LANGCHAIN_API_KEY'] = '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'
-os.environ['LANGCHAIN_PROJECT'] = 'new-rag-examination'
 
 # Function to set up the vector store based on uploaded PDFs
 def setup_vectorstore(uploaded_files):
@@ -194,7 +191,17 @@ def main():
             file_content = io.StringIO(file_content.decode(encoding))
             df = pd.read_csv(file_content)
             df.columns = df.columns.str.strip().str.lower()
-            questions = [col.strip() for col in df.columns if '?' in col.strip()[-1]]
+            question_keywords = ["what", "how", "illustrate", "mention",
+                                 "who", "when", "where", "why",
+                                 "describe", "explain", "compare", "contrast",
+                                 "define", "outline", "summarize", "discuss"]
+
+            # Extract questions based on specific keywords and ending with '?'
+            questions = [
+                col for col in df.columns
+                if any(col.lower().startswith(keyword) for keyword in question_keywords) or col.endswith('?')
+            ]
+            # questions = [col.strip() for col in df.columns if '?' in col.strip()[-1]]
             structured_data = []
             for index, row in df.iterrows():
                 name = row['full name in english']
