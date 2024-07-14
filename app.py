@@ -204,10 +204,12 @@ def main():
                 col for col in df.columns
                 if any(col.lower().startswith(keyword) for keyword in question_keywords) or col.endswith('?')
             ]
-            # questions = [col.strip() for col in df.columns if '?' in col.strip()[-1]]
+            fullname_column = [col for col in df.columns if 'fullname' in col.replace(' ', '').lower()][0]
             structured_data = []
             for index, row in df.iterrows():
-                name = row['full name in english']
+                name = row[fullname_column]
+                if pd.isna(name):
+                    name = 'No Name'
                 for question in questions:
                     answer = row[question]
                     structured_data.append({
