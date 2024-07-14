@@ -24,11 +24,6 @@ load_dotenv()
 langchain_api_key = os.getenv('LANGCHAIN_API_KEY')
 groq_api_key = os.getenv('GROQ_API_KEY')
 
-# Set environment variables
-os.environ["HUGGINGFACE_API_TOKEN"] = "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"
-os.environ['GROQ_API_KEY'] = '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'
-os.environ['LANGCHAIN_TRACING_V2'] = 'true'
-
 # Function to set up the vector store based on uploaded PDFs
 def setup_vectorstore(uploaded_files):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
