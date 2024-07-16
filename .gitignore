@@ -1,5 +1,5 @@
 venv/
-.streamlit/secrets.toml
+secrets.toml
 Sample_Data*
 .env
 __pycache__/
