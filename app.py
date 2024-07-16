@@ -17,11 +17,12 @@ import chardet
 import os
 from dotenv import load_dotenv
 
+
 # Load environment variables from .env file
 load_dotenv()
 
 # Access the API key
-langchain_api_key = os.getenv('LANGCHAIN_API_KEY')
+huggingface_api_key = os.getenv('HUGGINGFACE_API_TOKEN')
 groq_api_key = os.getenv('GROQ_API_KEY')
 
 # Function to set up the vector store based on uploaded PDFs
@@ -62,7 +63,7 @@ def retrieve_documents(question, retriever):
                 }
             ],
             model="llama3-70b-8192",
-            temperature=0.001
+            temperature=0.0
 
         )
         return chat_completion.choices[0].message.content
