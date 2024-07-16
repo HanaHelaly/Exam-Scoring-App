@@ -13,18 +13,8 @@ from langchain.docstore.document import Document
 from datasets import Dataset
 import io
 import chardet
-import os
-from dotenv import load_dotenv
 
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Access the API key
-huggingface_api_key = os.getenv('HUGGINGFACE_API_TOKEN')
-groq_api_key = os.getenv('GROQ_API_KEY')
-
-# Function to set up the vector store based on uploaded PDFs
 def setup_vectorstore(uploaded_files):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
     text_chunks = text_splitter.split_documents(uploaded_files[0]['model_answer'])
@@ -51,7 +41,7 @@ def retrieve_documents(question, retriever):
     Output (2 queries starting with '#'):
     """
 
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
     def get_groq_response(prompt_text):
         chat_completion = client.chat.completions.create(
@@ -132,9 +122,7 @@ def process_answer(reference_docs, question, answer, retriever):
     * Final Score (out of 10 points): output the score in the end between double %%: %%value%%
     """
 
-    client = Groq(
-        api_key=os.environ.get("GROQ_API_KEY"),
-    )
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
     def get_groq_response(prompt_text):
         chat_completion = client.chat.completions.create(
@@ -205,6 +193,7 @@ def main():
                 if any(col.lower().startswith(keyword) for keyword in question_keywords) or col.endswith('?')
             ]
             fullname_column = [col for col in df.columns if 'fullname' in col.replace(' ', '').lower()][0]
+
             structured_data = []
             for index, row in df.iterrows():
                 name = row[fullname_column]
@@ -268,6 +257,10 @@ def main():
                         pivot_df.reset_index(inplace=True)
                         pivot_df['final_score'] = pivot_df.iloc[:, 1:].mean(axis=1) * 5
                         pivot_df['final_score'] = pivot_df['final_score'].round(1)
+                        pivot_df = pivot_df.rename(columns={'final_score': 'Final Score (50)'})
+                        threshold = 0.9 * len(pivot_df)
+                        pivot_df.dropna(axis=1, thresh=threshold, inplace=True)
+
                         st.dataframe(pivot_df)
                         st.download_button(
                             label="Download Results",
