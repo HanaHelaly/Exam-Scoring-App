@@ -1,6 +1,5 @@
 import pandas as pd
 import time
-import os
 import re
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -14,9 +13,10 @@ from datasets import Dataset
 import io
 import chardet
 
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 def setup_vectorstore(uploaded_files):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=150)
     text_chunks = text_splitter.split_documents(uploaded_files[0]['model_answer'])
     embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L12-v2')
     vectorstore = FAISS.from_documents(documents=text_chunks, embedding=embeddings)
@@ -41,7 +41,6 @@ def retrieve_documents(question, retriever):
     Output (2 queries starting with '#'):
     """
 
-    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
     def get_groq_response(prompt_text):
         chat_completion = client.chat.completions.create(
@@ -85,7 +84,7 @@ def reciprocal_rank_fusion(results, k=60):
 
 def extract_final_score(text):
     # Regular expression pattern to find the final score
-    pattern = r'%%(\d+(?:\.\d+)?)%%'
+    pattern = r'\%\%(\d+(?:\.\d+)?)\d*\/?\d*\%\%'
 
     match = re.search(pattern, text)
 
@@ -93,17 +92,31 @@ def extract_final_score(text):
         return float(match.group(1))
     else:
         return 1
-def process_answer(reference_docs, question, answer, retriever):
+def process_answer(reference_docs, question, answer):
     template = """
     **Instruction:**
-    You are a student scoring exam system that uses a reference document to evaluate student answers. Your only information is the provided reference documents. Extract the correct answer from the documents and evaluate based on the student's answer.
+    You are an automated exam grader tasked with evaluating student responses against a provided reference document. Your evaluation will focus on the following criteria:
 
     **Scoring Criteria:**
-    * Final Score (out of 10 points): Add the accuracy, relevance, and completeness output scores. If the student's answer is unavailable , missing or seems to answer another question, GIVE ZERO IN ALL CATEGORIES.
-    * Accuracy (out of 5 points): How well the student's answers the question correctly and matches the key points in the reference document.
-    * Relevance (out of 3 points): How well the student's answer stays relevant to the question asked.
-    * Completeness (out of 2 points): How well the student's answer covers all essential aspects of the question.
+    * Accuracy: How closely does the student's answer align with the correct information in the reference document?
+    * Relevance: Does the student's answer directly address the question asked?
+    * Completeness: Does the student's answer cover all essential points related to the question?
+    Each criterion will be scored on a scale of 0 to the maximum points indicated below:
 
+    * Accuracy: 5 points
+    * Relevance: 3 points
+    * Completeness: 2 points
+    
+    Scoring Guidelines:
+    * A score of zero for any criterion will be assigned if:
+        * The student's answer is missing or unavailable.
+        * The student's answer is irrelevant to the question.
+        * The student's answer appears to address a different question.
+    Example:
+    If a student's answer is completely incorrect, irrelevant, and incomplete, the scores would be: Accuracy: 0, Relevance: 0, Completeness: 0. Final score: 0.
+    
+    The final score is the sum of the scores for each criterion, with a maximum possible score of 10 points.
+    Please output the score value in the end between double percentage signs %%\d%%
     **Reference Document:**
     {reference}
 
@@ -117,7 +130,6 @@ def process_answer(reference_docs, question, answer, retriever):
     * Final Score (out of 10 points): output the score in the end between double %%: %%value%%
     """
 
-    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
     def get_groq_response(prompt_text):
         chat_completion = client.chat.completions.create(
@@ -135,6 +147,7 @@ def process_answer(reference_docs, question, answer, retriever):
     full_prompt = template.format(reference=reference_docs, answer=answer, question=question)
 
     groq_response = get_groq_response(full_prompt)
+    # print(groq_response)
 
     result = {
         "reference": reference_docs,
@@ -151,10 +164,10 @@ def process_answer(reference_docs, question, answer, retriever):
 
 def main():
     st.set_page_config(page_title="Test Corrector Model")
-    col1, col2, col3 = st.columns([0.25, 5.5, 0.25])
+    col1, col2, col3 = st.columns([0.2, 5.6, 0.2])
     with col2:
         st.title("📝 Examination Test Scoring")
-        st.markdown("###### Upload Questions Source PDF and Students' Answers CSV and get Grades in 5 Minutes")
+        st.markdown("###### Upload Questions Source PDF and Students' Answers CSV and Get Grades in a Few Minutes")
         st.text("")
         st.text("")
 
@@ -233,12 +246,12 @@ def main():
                                 success = False
                                 while not success:
                                     try:
-                                        result = process_answer(reference_docs=reference_docs, question=question, answer=answer, retriever=retriever)
+                                        result = process_answer(reference_docs=reference_docs, question=question, answer=answer)
                                         success = True
                                     except Exception as e:
                                         if 'rate limit' in str(e).lower():
                                             print(e)
-                                            time.sleep(20)
+                                            time.sleep(22)
                                     question_score = min(result['score'], 10)
                                     results.append({
                                         'student_name': student['name'],
