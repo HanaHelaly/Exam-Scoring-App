@@ -12,6 +12,14 @@ from langchain.docstore.document import Document
 from datasets import Dataset
 import io
 import chardet
+import os
+# Configure environment to connect to LangSmith for debugging
+# os.environ['LANGCHAIN_TRACING_V2'] = 'true'
+# os.environ['LANGCHAIN_ENDPOINT'] = 'https://api.smith.langchain.com'
+# os.environ['LANGCHAIN_API_KEY'] = st.secrets['LANGCHAIN_API_KEY']
+# os.environ['LANGCHAIN_PROJECT'] = 'RAG-Exam'
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
@@ -113,10 +121,10 @@ def process_answer(reference_docs, question, answer):
         * The student's answer is irrelevant to the question.
         * The student's answer appears to address a different question.
     Example:
-    If a student's answer is completely incorrect, irrelevant, and incomplete, the scores would be: Accuracy: 0, Relevance: 0, Completeness: 0. Final score: 0.
+    If a student's answer is completely incorrect , improvisation, irrelevant or missing, the scores would be: Accuracy: 0, Relevance: 0, Completeness: 0. Final score: 0.
     
     The final score is the sum of the scores for each criterion, with a maximum possible score of 10 points.
-    Please output the score value in the end between double percentage signs %%\d%%
+    
     **Reference Document:**
     {reference}
 
@@ -127,7 +135,8 @@ def process_answer(reference_docs, question, answer):
     {question}
 
     **Output:**
-    * Final Score (out of 10 points): output the score in the end between double %%: %%value%%
+    Wrap the final score between double percentage signs. For example, if the final score is 8, output: %%8%%
+    
     """
 
 
