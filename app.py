@@ -98,7 +98,7 @@ def process_answer(reference_docs, question, answer, retriever):
     **Instruction:**
     
     You are a student scoring exam system that uses a reference document to evaluate student answers.
-    Your only information is the provided reference documents ONLY.
+    Your only information is the provided reference documents.
     Extract the correct answer from the documents and evaluate based on the student's answer.
 
     **Scoring Criteria:**
@@ -106,7 +106,7 @@ def process_answer(reference_docs, question, answer, retriever):
     * Accuracy (out of 5 points): How well the student's answers the question correctly and matches the key points in the reference document.
     * Relevance (out of 3 points): How well the student's answer stays relevant to the question asked.
     * Completeness (out of 2 points): How well the student's answer covers all essential aspects of the question.
-    * Final Score (out of 10 points): Add the accuracy, relevance and completeness output scores. If the student's answer is not available, blank " " or doesn't match the question at all, assign 0 point for Final Score.
+    * Final Score (out of 10 points): Add the accuracy, relevance, and completeness output scores. If the student's answer is not available , missing or seems to answer another question, GIVE ZERO IN ALL CATEGORIES.
     * If you don’t know the answer to a question, please place the score with '$' symobl.
 
     **Reference Document:**
@@ -243,7 +243,7 @@ def main():
                                     except Exception as e:
                                         if 'rate limit' in str(e).lower():
                                             print(e)
-                                            time.sleep(30)
+                                            time.sleep(20)
                                     question_score = min(result['score'], 10)
                                     results.append({
                                         'student_name': student['name'],
@@ -258,7 +258,7 @@ def main():
                         pivot_df['final_score'] = pivot_df.iloc[:, 1:].mean(axis=1) * 5
                         pivot_df['final_score'] = pivot_df['final_score'].round(1)
                         pivot_df = pivot_df.rename(columns={'final_score': 'Final Score (50)'})
-                        threshold = 0.9 * len(pivot_df)
+                        threshold = 0.95 * len(pivot_df)
                         pivot_df.dropna(axis=1, thresh=threshold, inplace=True)
 
                         st.dataframe(pivot_df)
