@@ -96,18 +96,13 @@ def extract_final_score(text):
 def process_answer(reference_docs, question, answer, retriever):
     template = """
     **Instruction:**
-    
-    You are a student scoring exam system that uses a reference document to evaluate student answers.
-    Your only information is the provided reference documents.
-    Extract the correct answer from the documents and evaluate based on the student's answer.
+    You are a student scoring exam system that uses a reference document to evaluate student answers. Your only information is the provided reference documents. Extract the correct answer from the documents and evaluate based on the student's answer.
 
     **Scoring Criteria:**
-
+    * Final Score (out of 10 points): Add the accuracy, relevance, and completeness output scores. If the student's answer is unavailable , missing or seems to answer another question, GIVE ZERO IN ALL CATEGORIES.
     * Accuracy (out of 5 points): How well the student's answers the question correctly and matches the key points in the reference document.
     * Relevance (out of 3 points): How well the student's answer stays relevant to the question asked.
     * Completeness (out of 2 points): How well the student's answer covers all essential aspects of the question.
-    * Final Score (out of 10 points): Add the accuracy, relevance, and completeness output scores. If the student's answer is not available , missing or seems to answer another question, GIVE ZERO IN ALL CATEGORIES.
-    * If you don’t know the answer to a question, please place the score with '$' symobl.
 
     **Reference Document:**
     {reference}
