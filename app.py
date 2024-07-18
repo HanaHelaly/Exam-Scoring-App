@@ -103,27 +103,17 @@ def extract_final_score(text):
 def process_answer(reference_docs, question, answer):
     template = """
     **Instruction:**
-    You are an automated exam grader tasked with evaluating student responses against a provided reference document. Your evaluation will focus on the following criteria:
+    You are a student scoring exam system that uses a reference document to evaluate student answers. Your only information is the provided reference documents. Extract the correct answer from the documents.
 
     **Scoring Criteria:**
-    * Accuracy: How closely does the student's answer align with the correct information in the reference document?
-    * Relevance: Does the student's answer directly address the question asked?
-    * Completeness: Does the student's answer cover all essential points related to the question?
-    Each criterion will be scored on a scale of 0 to the maximum points indicated below:
 
-    * Accuracy: 5 points
-    * Relevance: 3 points
-    * Completeness: 2 points
-    
-    Scoring Guidelines:
-    * A score of zero for any criterion will be assigned if:
-        * The student's answer is missing or unavailable.
-        * The student's answer is irrelevant to the question.
-        * The student's answer appears to address a different question.
-    Example:
-    If a student's answer is completely incorrect , improvisation, irrelevant or missing, the scores would be: Accuracy: 0, Relevance: 0, Completeness: 0. Final score: 0.
-    
-    The final score is the sum of the scores for each criterion, with a maximum possible score of 10 points.
+    * Evaluate the student's answer based on the following criteria:
+        * Accuracy (out of 5 points): How well the student's answers the question correctly.
+        * Relevance (out of 2 points): How well the student's answer stays relevant to the question asked.
+        * Completeness (out of 3 points): How well the student's answer covers essential aspects of the question.
+
+    * Final Score (out of 10 points): Add the accuracy, relevance, and completeness output scores. If the student's answer is not available , missing or seems to answer another question, GIVE ZERO IN ALL CATEGORIES.
+    * Mention explanation for the chosen score.
     
     **Reference Document:**
     {reference}
@@ -136,7 +126,6 @@ def process_answer(reference_docs, question, answer):
 
     **Output:**
     Wrap the final score between double percentage signs. For example, if the final score is 8, output: %%8%%
-    
     """
 
 
@@ -149,14 +138,16 @@ def process_answer(reference_docs, question, answer):
                 }
             ],
             model="llama3-70b-8192",
-            temperature=0.0
+            temperature=0.0,
+            top_p=0.1
         )
         return chat_completion.choices[0].message.content
 
     full_prompt = template.format(reference=reference_docs, answer=answer, question=question)
 
     groq_response = get_groq_response(full_prompt)
-    # print(groq_response)
+    print(groq_response)
+    print("--------------------------------")
 
     result = {
         "reference": reference_docs,
