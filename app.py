@@ -146,7 +146,8 @@ def process_answer(reference_docs, question, answer):
     full_prompt = template.format(reference=reference_docs, answer=answer, question=question)
 
     groq_response = get_groq_response(full_prompt)
-    print(groq_response)
+    print('Question:',question)
+    print('Response',groq_response)
     print("--------------------------------")
 
     result = {
@@ -183,7 +184,6 @@ def main():
         student_answer_csv = st.file_uploader("Upload Student Answer CSV", type="csv")
         if student_answer_csv:
             file_content = student_answer_csv.read()
-
             # Detect the encoding of the file
             result = chardet.detect(file_content)
             encoding = result['encoding']
@@ -246,7 +246,9 @@ def main():
                                 success = False
                                 while not success:
                                     try:
+                                        print(student['name'])
                                         result = process_answer(reference_docs=reference_docs, question=question, answer=answer)
+
                                         success = True
                                     except Exception as e:
                                         if 'rate limit' in str(e).lower():
