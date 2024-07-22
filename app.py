@@ -114,7 +114,13 @@ def process_answer(reference_docs, question, answer):
     Example 1:
     
     **Reference Document:**
-    Newton’s laws of motion, three statements describing the relations between the forces acting on a body and the motion of the body, first formulated by English physicist and mathematician Isaac Newton, which are the foundation of classical mechanics. The first law states that an object at rest will remain at rest, and an object in motion will remain in motion unless acted upon by an external force. The second law relates the acceleration of an object to the force applied to it and its mass. The third law states that for every action, there is an equal and opposite reaction.
+    Newton’s laws of motion, three statements describing the relations between the forces acting on a body and the
+    motion of the body, first formulated by English physicist and mathematician Isaac Newton,
+    which are the foundation of classical mechanics. 
+    The first law states that an object at rest will remain at rest, 
+    and an object in motion will remain in motion unless acted upon by an external force. 
+    The second law relates the acceleration of an object to the force applied to it and its mass. 
+    The third law states that for every action, there is an equal and opposite reaction.
     
     **Question:**
     What are Newton's laws of motion?
@@ -124,14 +130,20 @@ def process_answer(reference_docs, question, answer):
     
     **Output:**
     Accuracy (out of 5 points): 5 points
-    Relevance (out of 2 points): 3 points
-    Completeness (out of 3 points): 2 points
+    Relevance (out of 2 points): 2 points
+    Completeness (out of 3 points): 3 points
     **Final Score: %%10%%**
     
     Example 2:
     
     **Reference Document:**
-    Newton’s laws of motion, three statements describing the relations between the forces acting on a body and the motion of the body, first formulated by English physicist and mathematician Isaac Newton, which are the foundation of classical mechanics. The first law states that an object at rest will remain at rest, and an object in motion will remain in motion unless acted upon by an external force. The second law relates the acceleration of an object to the force applied to it and its mass. The third law states that for every action, there is an equal and opposite reaction.
+    Newton’s laws of motion, three statements describing the relations between the forces acting on a body and the
+    motion of the body, first formulated by English physicist and mathematician Isaac Newton,
+    which are the foundation of classical mechanics. 
+    The first law states that an object at rest will remain at rest, 
+    and an object in motion will remain in motion unless acted upon by an external force. 
+    The second law relates the acceleration of an object to the force applied to it and its mass. 
+    The third law states that for every action, there is an equal and opposite reaction.
     
     **Question:**
     What are Newton's laws of motion?
@@ -141,9 +153,9 @@ def process_answer(reference_docs, question, answer):
     
     **Output:**
     Accuracy (out of 5 points): 1 point
-    Relevance (out of 2 points): 1 point
+    Relevance (out of 2 points): 2 point
     Completeness (out of 3 points): 0 points
-    **Final Score: %%2%%**
+    **Final Score: %%3%%**
     
     Now, evaluate the following:
     
