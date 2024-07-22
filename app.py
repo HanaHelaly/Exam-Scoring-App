@@ -13,11 +13,7 @@ from datasets import Dataset
 import io
 import chardet
 import os
-# Configure environment to connect to LangSmith for debugging
-# os.environ['LANGCHAIN_TRACING_V2'] = 'true'
-# os.environ['LANGCHAIN_ENDPOINT'] = 'https://api.smith.langchain.com'
-# os.environ['LANGCHAIN_API_KEY'] = st.secrets['LANGCHAIN_API_KEY']
-# os.environ['LANGCHAIN_PROJECT'] = 'RAG-Exam'
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
@@ -102,28 +98,64 @@ def extract_final_score(text):
         return 1
 def process_answer(reference_docs, question, answer):
     template = """
-    **Instruction:**
+   **Instruction:**
     You are a student scoring exam system that uses a reference document to evaluate student answers. Your only information is the provided reference documents. Extract the correct answer from the documents.
-
+    
     **Scoring Criteria:**
-
+    
     * Evaluate the student's answer based on the following criteria:
-        * Accuracy (out of 5 points): How well the student's answers the question correctly.
+        * Accuracy (out of 5 points): How well the student's answer correctly addresses the question.
         * Relevance (out of 2 points): How well the student's answer stays relevant to the question asked.
-        * Completeness (out of 3 points): How well the student's answer covers essential aspects of the question.
-
-    * Final Score (out of 10 points): Add the accuracy, relevance, and completeness output scores. If the student's answer is not available , missing or seems to answer another question, GIVE ZERO IN ALL CATEGORIES.
-    * Mention explanation for the chosen score.
+        * Completeness (out of 3 points): How well the student's answer covers essential aspects of the question. It does not have to cover all aspects of the question.
+    
+    * Final Score (out of 10 points): Add the accuracy, relevance, and completeness scores. If the student's answer is unavailable, missing, or not answering the question, GIVE ZERO IN ALL CATEGORIES.
+    * Mention an explanation for the chosen score.
+    
+    Example 1:
+    
+    **Reference Document:**
+    Newton’s laws of motion, three statements describing the relations between the forces acting on a body and the motion of the body, first formulated by English physicist and mathematician Isaac Newton, which are the foundation of classical mechanics. The first law states that an object at rest will remain at rest, and an object in motion will remain in motion unless acted upon by an external force. The second law relates the acceleration of an object to the force applied to it and its mass. The third law states that for every action, there is an equal and opposite reaction.
+    
+    **Question:**
+    What are Newton's laws of motion?
+    
+    **Student's Answer:**
+    Newton's laws of motion are three fundamental principles formulated by Sir Isaac Newton. The first law states that an object at rest will remain at rest, and an object in motion will remain in motion unless acted upon by an external force. The second law relates the acceleration of an object to the force applied to it and its mass. The third law states that for every action, there is an equal and opposite reaction.
+    
+    **Output:**
+    Accuracy (out of 5 points): 5 points
+    Relevance (out of 2 points): 3 points
+    Completeness (out of 3 points): 2 points
+    **Final Score: %%10%%**
+    
+    Example 2:
+    
+    **Reference Document:**
+    Newton’s laws of motion, three statements describing the relations between the forces acting on a body and the motion of the body, first formulated by English physicist and mathematician Isaac Newton, which are the foundation of classical mechanics. The first law states that an object at rest will remain at rest, and an object in motion will remain in motion unless acted upon by an external force. The second law relates the acceleration of an object to the force applied to it and its mass. The third law states that for every action, there is an equal and opposite reaction.
+    
+    **Question:**
+    What are Newton's laws of motion?
+    
+    **Student's Answer:**
+    Newton's laws of motion are principles that explain how objects move under forces.
+    
+    **Output:**
+    Accuracy (out of 5 points): 1 point
+    Relevance (out of 2 points): 1 point
+    Completeness (out of 3 points): 0 points
+    **Final Score: %%2%%**
+    
+    Now, evaluate the following:
     
     **Reference Document:**
     {reference}
-
+    
     **Student's Answer:**
     {answer}
-
+    
     **Question:**
     {question}
-
+    
     **Output:**
     Wrap the final score between double percentage signs. For example, if the final score is 8, output: %%8%%
     """
