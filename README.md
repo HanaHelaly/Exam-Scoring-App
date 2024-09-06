@@ -22,7 +22,7 @@ CSV FILE: Student answers (google forms output - sheets).
 
 The following steps outline how to use the application: 
 
-Navigate Link: (EXAM SCORING APP)[https://examination-form-scoring.streamlit.app/]
+Navigate Link: [EXAM SCORING APP](https://examination-form-scoring.streamlit.app/)
 
 1. Upload Files: Begin by uploading the PDF of the model answer and the CSV file containing students'
 answers from your local PC.
