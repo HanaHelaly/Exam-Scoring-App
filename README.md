@@ -35,7 +35,7 @@ download button.
 
 ## File Formats
 
-- **Answer Key**: PDF format containing the teacher's book containing correct answers.
+- **Answer Key**: PDF format of the teacher's book containing correct answers.
 - **Student Responses**: Google Sheets format. Ensure the sheet contains:
   - Fullname column of the student.
   - other student details such as National ID (optional)
