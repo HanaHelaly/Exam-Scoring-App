@@ -1,6 +1,6 @@
 # AI Exam Grading Tool using RAG and LLaMA3
 
-This web application leverages **Retrieval-Augmented Generation (RAG)** and **LLaMA3**, allowing educators to automate the grading process for essay-based exams. The tool takes in the answer key provided by the teacher in a PDF format and the Google Forms responses from students, and it outputs a graded results sheet.
+This web application leverages **Retrieval-Augmented Generation (RAG)** and **LLaMA3**, allowing educators to automate the grading process for essay-based exams. The tool takes in the answer key provided by the teacher in a PDF format (it can take an entire reference book) and the Google Forms responses from students, and it outputs a graded results sheet.
 
 ## Features
 
